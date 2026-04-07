@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, BookOpen } from 'lucide-react';
@@ -96,7 +97,7 @@ function LoginPageContent() {
         <Card className="border border-border">
           <CardHeader className="space-y-1">
             <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials or use a demo account</CardDescription>
+            <CardDescription>Sign in to continue planning, tracking, and managing your study workflow.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error ? (
@@ -155,24 +156,13 @@ function LoginPageContent() {
             <div className="space-y-2 text-center text-sm">
               <p className="text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <a href="/signup" className="font-medium text-primary hover:underline">
+                <Link href="/signup" className="font-medium text-primary hover:underline">
                   Sign up
-                </a>
+                </Link>
               </p>
-              <a href="/" className="font-medium text-primary hover:underline">
+              <Link href="/" className="font-medium text-primary hover:underline">
                 Back to home
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primary/5 border border-primary/30">
-          <CardContent className="pt-4">
-            <p className="text-xs text-foreground font-medium mb-2">Demo Credentials:</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><span className="font-medium">Student:</span> student@example.com</p>
-              <p><span className="font-medium">Admin:</span> admin@example.com</p>
-              <p><span className="font-medium">Password:</span> demo123</p>
+              </Link>
             </div>
           </CardContent>
         </Card>
