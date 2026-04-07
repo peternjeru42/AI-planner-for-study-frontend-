@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, BookOpen, CheckCircle } from 'lucide-react';
+import { AlertCircle, BookOpen, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react';
 
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export default function SignupPage() {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (user && !isLoading) {
@@ -135,24 +138,62 @@ export default function SignupPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Password</label>
-                <Input
-                  type="password"
-                  placeholder="********"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  disabled={isSubmitting}
-                />
+                <InputGroup className="h-14 rounded-2xl border-slate-300 bg-white shadow-[0_10px_30px_-24px_rgba(15,23,42,0.6)] transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100">
+                  <InputGroupAddon align="inline-start" className="pl-4 text-slate-400">
+                    <InputGroupText>
+                      <Lock className="h-5 w-5" />
+                    </InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    disabled={isSubmitting}
+                    className="h-14 rounded-2xl px-2 text-base placeholder:text-slate-400"
+                  />
+                  <InputGroupAddon align="inline-end" className="pr-3 text-slate-500">
+                    <InputGroupButton
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="cursor-pointer rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      onClick={() => setShowPassword((current) => !current)}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Confirm Password</label>
-                <Input
-                  type="password"
-                  placeholder="********"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  disabled={isSubmitting}
-                />
+                <InputGroup className="h-14 rounded-2xl border-slate-300 bg-white shadow-[0_10px_30px_-24px_rgba(15,23,42,0.6)] transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100">
+                  <InputGroupAddon align="inline-start" className="pl-4 text-slate-400">
+                    <InputGroupText>
+                      <Lock className="h-5 w-5" />
+                    </InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    disabled={isSubmitting}
+                    className="h-14 rounded-2xl px-2 text-base placeholder:text-slate-400"
+                  />
+                  <InputGroupAddon align="inline-end" className="pr-3 text-slate-500">
+                    <InputGroupButton
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="cursor-pointer rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      onClick={() => setShowConfirmPassword((current) => !current)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
               </div>
 
               <div className="flex items-center gap-2">
