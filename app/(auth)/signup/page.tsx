@@ -170,7 +170,11 @@ export default function SignupPage() {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full cursor-pointer rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-[0_20px_45px_-22px_rgba(37,99,235,0.95)] transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_24px_50px_-20px_rgba(14,165,233,0.85)]"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
