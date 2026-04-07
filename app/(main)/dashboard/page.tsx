@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { dashboardApi, plannerApi } from '@/lib/api';
+import { dashboardApi } from '@/lib/api';
 import { Assessment, StudySession } from '@/lib/types';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { DateUtils } from '@/lib/utils/date';
@@ -49,15 +49,6 @@ export default function DashboardPage() {
     loadDashboard();
   }, []);
 
-  const handleGeneratePlan = async () => {
-    try {
-      await plannerApi.generate();
-      await loadDashboard();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate plan');
-    }
-  };
-
   if (!user) return null;
 
   const weeklyData =
@@ -75,7 +66,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 px-4 sm:px-6 lg:px-8 py-6">
-      <WelcomeCard user={user} onGeneratePlan={handleGeneratePlan} />
+      <WelcomeCard user={user} />
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
