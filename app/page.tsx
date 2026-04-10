@@ -106,7 +106,7 @@ export default function LandingPage() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold leading-tight sm:text-5xl">AI powered study planner.</h1>
+              <h1 className="text-4xl font-bold leading-tight sm:text-5xl">Ai powered study planner with assessment and deadlines tracking .</h1>
               <p className="text-base leading-7 text-slate-700">
                 Plan assessments, generate focused study sessions, track real progress, and stay ahead with a study workflow that feels intentional from the first deadline to the final exam.
               </p>

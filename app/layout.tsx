@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'StudyFlow - AI-Powered Study Planner',
+  title: 'Ai powered study planner with assessment and deadlines tracking .',
   description: 'Intelligent study planning and scheduling platform for students',
   generator: 'v0.app',
   icons: {
