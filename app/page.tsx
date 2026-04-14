@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import {
-  ArrowRight,
   BookMarked,
   BookOpen,
   BrainCircuit,
@@ -13,7 +12,6 @@ import {
   CheckCircle2,
   Clock3,
   LineChart,
-  ShieldCheck,
   Sparkles,
   TimerReset,
 } from 'lucide-react';
@@ -120,21 +118,6 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button size="lg" onClick={() => router.push('/login?demo=student')} className="group rounded-md text-base">
-                    Open student demo
-                    <ArrowRight className="ml-1 h-4 w-4 transition group-hover:translate-x-1" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => router.push('/login?demo=admin')}
-                    className="rounded-md border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-                  >
-                    Open admin demo
-                  </Button>
-                </div>
-
                 <div className="grid gap-3 sm:grid-cols-3">
                   {heroStats.map((item) => (
                     <div key={item.label} className="rounded-md border border-white/15 bg-white/10 p-4 text-white backdrop-blur-sm">
@@ -201,21 +184,6 @@ export default function LandingPage() {
                   ))}
                 </CardContent>
               </Card>
-
-              <Card className="border-border/70 bg-primary text-primary-foreground shadow-sm">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground/75">Projected completion</p>
-                      <p className="mt-3 text-4xl font-semibold">86%</p>
-                      <p className="mt-3 max-w-sm text-sm text-primary-foreground/80">
-                        The workspace is designed to keep the week achievable without hiding the actual load.
-                      </p>
-                    </div>
-                    <ShieldCheck className="h-10 w-10 text-primary-foreground/70" />
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>
@@ -252,8 +220,7 @@ export default function LandingPage() {
               <div className="space-y-5">
                 <h3 className="text-3xl font-semibold tracking-tight text-foreground">Start from the same backend, with a frontend that feels intentional.</h3>
                 <p className="mx-auto max-w-2xl text-lg leading-8 text-muted-foreground">
-                  Sign in, load the demo accounts, and move through the exact workflows for subjects, assessments, planning,
-                  progress, and notifications.
+                  Sign in and move through the workflows for subjects, assessments, planning, progress, and notifications.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
                   <Button size="lg" onClick={() => router.push('/signup')} className="rounded-md">

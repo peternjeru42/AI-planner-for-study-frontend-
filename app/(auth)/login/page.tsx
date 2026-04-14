@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertCircle, ArrowRight, BookOpen, CheckCircle2, Sparkles } from 'lucide-react';
 
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -23,26 +23,14 @@ function AuthLoadingState() {
   );
 }
 
-function LoginPageContent() {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, login, isLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const demo = searchParams.get('demo');
-    if (demo === 'student') {
-      setEmail('student@example.com');
-      setPassword('demo123');
-    } else if (demo === 'admin') {
-      setEmail('admin@example.com');
-      setPassword('demo123');
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     if (user && !isLoading) {
@@ -57,21 +45,6 @@ function LoginPageContent() {
 
     try {
       const authenticatedUser = await login(email, password);
-      router.push(authenticatedUser.role === 'admin' ? '/admin' : '/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDemoLogin = async (role: 'student' | 'admin') => {
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      const demoEmail = role === 'student' ? 'student@example.com' : 'admin@example.com';
-      const authenticatedUser = await login(demoEmail, 'demo123');
       router.push(authenticatedUser.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -116,9 +89,9 @@ function LoginPageContent() {
               </div>
               <div className="grid gap-3">
                 {[
-                  'Use the student demo to inspect the full study workflow.',
-                  'Use the admin demo to review platform-wide activity.',
+                  'Subjects, assessments, study sessions, and notifications stay connected.',
                   'The frontend is refreshed without changing backend behavior.',
+                  'Use your live backend configuration to sign in with real accounts.',
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-2 rounded-md border border-white/15 bg-white/10 p-3 text-sm text-white/90 backdrop-blur-sm">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
@@ -152,7 +125,7 @@ function LoginPageContent() {
             <Card className="border-border/70 bg-card shadow-sm">
               <CardHeader className="space-y-1">
                 <CardTitle>Account access</CardTitle>
-                <CardDescription>Use your own account or jump into the demo workspaces.</CardDescription>
+                <CardDescription>Use your account to enter the planning workspace.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {error ? (
@@ -192,24 +165,6 @@ function LoginPageContent() {
                   </Button>
                 </form>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Quick demos</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Button type="button" variant="outline" onClick={() => handleDemoLogin('student')} disabled={isSubmitting} className="rounded-md">
-                    Student demo
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => handleDemoLogin('admin')} disabled={isSubmitting} className="rounded-md">
-                    Admin demo
-                  </Button>
-                </div>
-
                 <div className="space-y-2 text-sm">
                   <p className="text-muted-foreground">
                     Need an account?{' '}
@@ -228,13 +183,5 @@ function LoginPageContent() {
         </section>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<AuthLoadingState />}>
-      <LoginPageContent />
-    </Suspense>
   );
 }
