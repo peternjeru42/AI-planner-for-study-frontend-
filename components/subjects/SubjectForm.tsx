@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+
 import { Subject } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { SUBJECT_COLORS } from '@/lib/utils/constants';
 
@@ -50,24 +52,26 @@ export default function SubjectForm({ initialData, onSubmit, onCancel }: Subject
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Subject Name *</label>
+          <label className="text-sm font-medium text-foreground">Subject name *</label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g., Data Structures"
+            placeholder="e.g. Data Structures"
+            className="h-11 rounded-md"
           />
           {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Subject Code *</label>
+          <label className="text-sm font-medium text-foreground">Subject code *</label>
           <Input
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            placeholder="e.g., CS201"
+            placeholder="e.g. CS201"
+            className="h-11 rounded-md"
           />
           {errors.code && <p className="text-xs text-destructive">{errors.code}</p>}
         </div>
@@ -77,7 +81,8 @@ export default function SubjectForm({ initialData, onSubmit, onCancel }: Subject
           <Input
             value={formData.instructor}
             onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
-            placeholder="e.g., Prof. John Smith"
+            placeholder="e.g. Prof. John Smith"
+            className="h-11 rounded-md"
           />
         </div>
 
@@ -86,22 +91,21 @@ export default function SubjectForm({ initialData, onSubmit, onCancel }: Subject
           <Input
             value={formData.semester}
             onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-            placeholder="e.g., Spring 2024"
+            placeholder="e.g. Semester 2"
+            className="h-11 rounded-md"
           />
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <label className="text-sm font-medium text-foreground">Color</label>
-          <div className="grid grid-cols-4 gap-2">
+          <label className="text-sm font-medium text-foreground">Course color</label>
+          <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
             {SUBJECT_COLORS.map((colorOption) => (
               <button
                 key={colorOption.value}
                 type="button"
                 onClick={() => setFormData({ ...formData, color: colorOption.value })}
                 className={`w-10 h-10 rounded-lg border-2 transition ${
-                  formData.color === colorOption.value
-                    ? 'border-foreground'
-                    : 'border-transparent'
+                  formData.color === colorOption.value ? 'border-foreground scale-105' : 'border-transparent'
                 }`}
                 style={{ backgroundColor: colorOption.value }}
                 title={colorOption.label}
@@ -112,22 +116,22 @@ export default function SubjectForm({ initialData, onSubmit, onCancel }: Subject
 
         <div className="space-y-2 md:col-span-2">
           <label className="text-sm font-medium text-foreground">Description</label>
-          <textarea
+          <Textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Add notes about this subject..."
+            placeholder="Add notes about the subject, workload, or expectations."
             rows={3}
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="rounded-md"
           />
         </div>
       </div>
 
-      <div className="flex gap-2 justify-end pt-4 border-t border-border">
-        <Button variant="outline" onClick={onCancel} type="button">
+      <div className="flex justify-end gap-2 border-t border-border pt-4">
+        <Button variant="outline" onClick={onCancel} type="button" className="rounded-md">
           Cancel
         </Button>
-        <Button type="submit">
-          {initialData ? 'Update' : 'Add'} Subject
+        <Button type="submit" className="rounded-md">
+          {initialData ? 'Save subject' : 'Create subject'}
         </Button>
       </div>
     </form>

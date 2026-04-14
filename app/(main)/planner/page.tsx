@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Clock3, PencilLine, Plus, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 
 import { PlannerAIModel, plannerApi } from '@/lib/api';
-import { AIPlanDraft, AIPlanDraftSession, StudyPlan, StudyScope, StudyDurationUnit } from '@/lib/types';
+import { AIPlanDraft, AIPlanDraftSession, StudyDurationUnit, StudyPlan, StudyScope } from '@/lib/types';
 import { DateUtils } from '@/lib/utils/date';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 const EXAMPLE_PROMPT =
-  'For instance I want to study Discrete maths unit for 10 hours a week excluding Tuesdays, create a study plan.';
+  'Plan a Discrete Mathematics unit for 10 hours each week, avoid Tuesdays, and keep the sessions realistic for evenings.';
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 type DraftEditor = AIPlanDraft & { model?: string };
 
@@ -240,81 +240,77 @@ export default function PlannerPage() {
   };
 
   return (
-    <div className="space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-700">Planner Workspace</p>
-          <h1 className="text-3xl font-bold text-foreground">Build custom study plans that fit your real schedule.</h1>
-          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-            Create an AI plan for a unit, topic, or course, edit the draft before you save, and let StudyFlow queue reminders
-            one hour before each study session.
-          </p>
+    <div className="space-y-8">
+      <section className="page-band">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Plan studio</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Build AI-guided study plans and edit them before they ever hit the calendar.</h1>
+            <p className="text-sm leading-7 text-muted-foreground">
+              Draft a unit, topic, or course plan, adjust every generated session, and keep assessment-based schedules available alongside custom plans.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={openCreate} size="lg" className="rounded-md">
+              <Sparkles className="h-4 w-4" />
+              Draft custom plan
+            </Button>
+            <Button onClick={generateAssessmentPlan} disabled={assessmentLoading} size="lg" variant="outline" className="rounded-md">
+              <RefreshCw className={`h-4 w-4 ${assessmentLoading ? 'animate-spin' : ''}`} />
+              {assessmentLoading ? 'Generating...' : 'Build from assessments'}
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            onClick={openCreate}
-            size="lg"
-            className="cursor-pointer rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-[0_20px_45px_-22px_rgba(37,99,235,0.95)] transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_24px_50px_-20px_rgba(14,165,233,0.85)]"
-          >
-            <Sparkles className="h-4 w-4" />
-            Generate Study Plan
-          </Button>
-          <Button
-            onClick={generateAssessmentPlan}
-            disabled={assessmentLoading}
-            size="lg"
-            variant="outline"
-            className="cursor-pointer rounded-2xl border-sky-200 bg-white/80 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${assessmentLoading ? 'animate-spin' : ''}`} />
-            {assessmentLoading ? 'Generating...' : 'Generate from Assessments'}
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      {pageError ? <p className="text-sm text-destructive">{pageError}</p> : null}
+      {pageError ? <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{pageError}</div> : null}
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardContent className="pt-6"><p className="text-3xl font-bold">{plannedSessions.length}</p><p className="text-sm text-muted-foreground">Scheduled Sessions</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><p className="text-3xl font-bold">{aiPlans.length}</p><p className="text-sm text-muted-foreground">Custom AI Plans</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><p className="text-3xl font-bold">{todaySessions.length}</p><p className="text-sm text-muted-foreground">Sessions Today</p></CardContent></Card>
-        <Card><CardContent className="pt-6"><p className="text-3xl font-bold">{(plannedSessions.reduce((sum, item) => sum + item.duration, 0) / 60).toFixed(1)}</p><p className="text-sm text-muted-foreground">Planned Hours</p></CardContent></Card>
+        <Card className="border-border/70 bg-card shadow-sm"><CardContent className="pt-6"><p className="text-sm font-medium text-muted-foreground">Scheduled sessions</p><p className="mt-3 text-3xl font-semibold text-foreground">{plannedSessions.length}</p></CardContent></Card>
+        <Card className="border-border/70 bg-card shadow-sm"><CardContent className="pt-6"><p className="text-sm font-medium text-muted-foreground">AI plans</p><p className="mt-3 text-3xl font-semibold text-foreground">{aiPlans.length}</p></CardContent></Card>
+        <Card className="border-border/70 bg-card shadow-sm"><CardContent className="pt-6"><p className="text-sm font-medium text-muted-foreground">Sessions today</p><p className="mt-3 text-3xl font-semibold text-foreground">{todaySessions.length}</p></CardContent></Card>
+        <Card className="border-border/70 bg-card shadow-sm"><CardContent className="pt-6"><p className="text-sm font-medium text-muted-foreground">Planned hours</p><p className="mt-3 text-3xl font-semibold text-foreground">{(plannedSessions.reduce((sum, item) => sum + item.duration, 0) / 60).toFixed(1)}</p></CardContent></Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.9fr]">
-        <Card className="border-sky-100 bg-gradient-to-br from-sky-50 via-white to-blue-50">
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Current Study Plans</CardTitle>
-            <CardDescription>Your saved AI plans. Edit them whenever the week changes.</CardDescription>
+            <CardTitle>Custom AI plans</CardTitle>
+            <CardDescription>Edit saved drafts whenever the week changes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? <p className="text-sm text-muted-foreground">Loading plans...</p> : null}
             {!loading && aiPlans.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-sky-200 bg-white/80 p-6 text-sm text-muted-foreground">
-                No custom AI plans yet. Generate one from a unit, topic, or course.
+              <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground">
+                No custom plans are saved yet. Draft one from a unit, topic, or course.
               </div>
             ) : null}
             {aiPlans.map((plan) => (
-              <div key={plan.id} className="rounded-2xl border border-sky-100 bg-white p-5 shadow-sm">
+              <div key={plan.id} className="rounded-md border border-border/70 bg-muted/20 p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-lg font-semibold text-slate-950">{plan.title}</p>
-                    <p className="text-sm text-muted-foreground">{plan.sessions.length} sessions - {plan.generatedForStartDate} to {plan.generatedForEndDate}</p>
-                    <p className="mt-1 text-xs text-sky-700">Reminders are queued 1 hour before every session.</p>
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-foreground">{plan.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {plan.sessions.length} sessions scheduled between {plan.generatedForStartDate} and {plan.generatedForEndDate}
+                    </p>
+                    <p className="text-xs text-primary">Reminder jobs are queued one hour before each saved session.</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => openEdit(plan)} className="cursor-pointer rounded-xl border-sky-200 hover:bg-sky-50">
+                  <Button variant="outline" size="sm" onClick={() => openEdit(plan)} className="rounded-md">
                     <PencilLine className="h-4 w-4" />
-                    Edit Plan
+                    Edit draft
                   </Button>
                 </div>
+
                 <div className="mt-4 space-y-2">
                   {plan.sessions.slice(0, 4).map((session) => (
-                    <div key={session.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
+                    <div key={session.id} className="flex items-center justify-between rounded-md border border-border/70 bg-card px-3 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-950">{session.title}</p>
-                        <p className="text-xs text-muted-foreground">{session.sessionDate} - {DateUtils.formatTime(session.startTime)} to {DateUtils.formatTime(session.endTime)}</p>
+                        <p className="text-sm font-medium text-foreground">{session.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.sessionDate} • {DateUtils.formatTime(session.startTime)} to {DateUtils.formatTime(session.endTime)}
+                        </p>
                       </div>
-                      <span className="text-xs font-medium text-sky-700">{session.duration} min</span>
+                      <span className="text-xs font-medium text-primary">{session.duration} min</span>
                     </div>
                   ))}
                 </div>
@@ -324,102 +320,140 @@ export default function PlannerPage() {
         </Card>
 
         <div className="space-y-6">
-          <Card>
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>Assessment-Based Schedule</CardTitle>
-              <CardDescription>The deterministic planner still turns your assessments into study blocks.</CardDescription>
+              <CardTitle>Assessment-generated schedule</CardTitle>
+              <CardDescription>The deterministic planner can still build sessions directly from your deadlines.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {assessmentSessions.length === 0 ? <p className="text-sm text-muted-foreground">No assessment-generated sessions yet.</p> : assessmentSessions.slice(0, 5).map((session) => (
-                <div key={session.id} className="rounded-xl border border-border px-4 py-3">
-                  <p className="font-medium text-foreground">{session.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{DateUtils.formatDateTime(session.startTime)} - {session.duration} min</p>
-                </div>
-              ))}
+              {assessmentSessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No assessment-generated sessions are available yet.</p>
+              ) : (
+                assessmentSessions.slice(0, 5).map((session) => (
+                  <div key={session.id} className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                    <p className="font-medium text-foreground">{session.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{DateUtils.formatDateTime(session.startTime)} • {session.duration} min</p>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>Upcoming Sessions</CardTitle>
-              <CardDescription>The next ten sessions across your current plans.</CardDescription>
+              <CardTitle>Upcoming sessions</CardTitle>
+              <CardDescription>The next ten sessions across every saved plan.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {upcomingSessions.length === 0 ? <p className="text-sm text-muted-foreground">No upcoming sessions.</p> : upcomingSessions.map((session) => (
-                <div key={session.id} className="flex items-start justify-between rounded-xl border border-border px-4 py-3">
-                  <div>
-                    <p className="font-medium text-foreground">{session.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{DateUtils.formatDateTime(session.startTime)}</p>
-                    <p className="mt-1 text-xs text-sky-700">{session.planTitle}</p>
+              {upcomingSessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No upcoming sessions are scheduled.</p>
+              ) : (
+                upcomingSessions.map((session) => (
+                  <div key={session.id} className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-foreground">{session.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{DateUtils.formatDateTime(session.startTime)}</p>
+                        <p className="mt-1 text-xs text-primary">{session.planTitle}</p>
+                      </div>
+                      <div className="text-sm text-muted-foreground">{session.duration} min</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">{session.duration} min</div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-5xl">
+        <DialogContent className="max-h-[92vh] overflow-y-auto border-border/70 bg-card sm:max-w-5xl">
           <DialogHeader>
-            <DialogTitle>{editingPlanId ? 'Edit AI Study Plan' : 'Generate AI Study Plan'}</DialogTitle>
-            <DialogDescription>Tell the model what to plan, then edit the sessions before you save them.</DialogDescription>
+            <DialogTitle>{editingPlanId ? 'Edit custom study plan' : 'Draft a custom study plan'}</DialogTitle>
+            <DialogDescription>Ask the model for a draft, then adjust the sessions before you save anything.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
-            <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
-              <p className="text-sm font-medium text-slate-950">Example</p>
+            <div className="rounded-md border border-border/70 bg-muted/30 p-4">
+              <p className="text-sm font-medium text-foreground">Prompt example</p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{EXAMPLE_PROMPT}</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Model</label>
-                <select value={editor.model ?? ''} onChange={(e) => setEditor((current) => ({ ...current, model: e.target.value }))} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-sky-200">
-                  {models.map((model) => <option key={model.id} value={model.id}>{model.label}{model.recommended ? ' (Recommended)' : ''}</option>)}
+                <select
+                  value={editor.model ?? ''}
+                  onChange={(e) => setEditor((current) => ({ ...current, model: e.target.value }))}
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {models.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.label}
+                      {model.recommended ? ' (Recommended)' : ''}
+                    </option>
+                  ))}
                 </select>
                 <p className="text-xs text-muted-foreground">{models.find((model) => model.id === editor.model)?.description}</p>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Plan Title</label>
-                <Input value={editor.title} onChange={(e) => setEditor((current) => ({ ...current, title: e.target.value }))} placeholder="Discrete Maths Study Plan" className="h-11 rounded-xl" />
+                <label className="text-sm font-medium">Plan title</label>
+                <Input value={editor.title} onChange={(e) => setEditor((current) => ({ ...current, title: e.target.value }))} placeholder="Discrete Mathematics revision plan" className="h-11 rounded-md" />
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[180px_1fr]">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Study Scope</label>
-                <select value={editor.studyScope} onChange={(e) => setEditor((current) => ({ ...current, studyScope: e.target.value as StudyScope }))} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-sky-200">
-                  <option value="unit">Unit</option><option value="topic">Topic</option><option value="course">Course</option>
+                <label className="text-sm font-medium">Study scope</label>
+                <select
+                  value={editor.studyScope}
+                  onChange={(e) => setEditor((current) => ({ ...current, studyScope: e.target.value as StudyScope }))}
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="unit">Unit</option>
+                  <option value="topic">Topic</option>
+                  <option value="course">Course</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">What do you want to study?</label>
-                <Input value={editor.targetName} onChange={(e) => setEditor((current) => ({ ...current, targetName: e.target.value }))} placeholder="Discrete Maths" className="h-11 rounded-xl" />
+                <Input value={editor.targetName} onChange={(e) => setEditor((current) => ({ ...current, targetName: e.target.value }))} placeholder="Discrete Mathematics" className="h-11 rounded-md" />
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[1fr_180px]">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Duration</label>
-                <Input type="number" min={1} value={editor.durationValue} onChange={(e) => setEditor((current) => ({ ...current, durationValue: Number(e.target.value) || 1 }))} className="h-11 rounded-xl" />
+                <label className="text-sm font-medium">Duration value</label>
+                <Input type="number" min={1} value={editor.durationValue} onChange={(e) => setEditor((current) => ({ ...current, durationValue: Number(e.target.value) || 1 }))} className="h-11 rounded-md" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Unit</label>
-                <select value={editor.durationUnit} onChange={(e) => setEditor((current) => ({ ...current, durationUnit: e.target.value as StudyDurationUnit }))} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-sky-200">
-                  <option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option>
+                <label className="text-sm font-medium">Duration unit</label>
+                <select
+                  value={editor.durationUnit}
+                  onChange={(e) => setEditor((current) => ({ ...current, durationUnit: e.target.value as StudyDurationUnit }))}
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Excluded Days</label>
+              <label className="text-sm font-medium">Excluded days</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map((day) => {
                   const active = editor.excludedDays.includes(day);
                   return (
-                    <button key={day} type="button" onClick={() => toggleExcludedDay(day)} className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm transition ${active ? 'border-sky-600 bg-sky-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50'}`}>
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleExcludedDay(day)}
+                      className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                        active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:bg-secondary'
+                      }`}
+                    >
                       {day}
                     </button>
                   );
@@ -428,18 +462,18 @@ export default function PlannerPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Extra Instructions</label>
-              <Textarea rows={4} value={editor.instructions ?? ''} onChange={(e) => setEditor((current) => ({ ...current, instructions: e.target.value }))} placeholder={EXAMPLE_PROMPT} />
+              <label className="text-sm font-medium">Extra instructions</label>
+              <Textarea rows={4} value={editor.instructions ?? ''} onChange={(e) => setEditor((current) => ({ ...current, instructions: e.target.value }))} placeholder={EXAMPLE_PROMPT} className="rounded-md" />
             </div>
 
-            <div className="flex flex-col gap-3 rounded-2xl border border-sky-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-md border border-border/70 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-950">Generate the first draft</p>
-                <p className="text-xs text-muted-foreground">The AI will return editable sessions that you can adjust before saving.</p>
+                <p className="text-sm font-medium text-foreground">Generate the first draft</p>
+                <p className="text-xs text-muted-foreground">The AI returns editable sessions that remain in your control.</p>
               </div>
-              <Button type="button" onClick={generateDraft} disabled={draftLoading} className="cursor-pointer rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-[0_20px_45px_-22px_rgba(37,99,235,0.95)] transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_24px_50px_-20px_rgba(14,165,233,0.85)]">
+              <Button type="button" onClick={generateDraft} disabled={draftLoading} className="rounded-md">
                 <Sparkles className={`h-4 w-4 ${draftLoading ? 'animate-pulse' : ''}`} />
-                {draftLoading ? 'Generating Draft...' : 'Generate Draft'}
+                {draftLoading ? 'Generating draft...' : 'Generate draft'}
               </Button>
             </div>
 
@@ -448,52 +482,70 @@ export default function PlannerPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-base font-semibold text-slate-950">Editable Sessions</p>
-                  <p className="text-sm text-muted-foreground">Accept the draft or edit every block before saving.</p>
+                  <p className="text-base font-semibold text-foreground">Editable sessions</p>
+                  <p className="text-sm text-muted-foreground">Adjust any block before saving the plan.</p>
                 </div>
-                <Button type="button" variant="outline" onClick={() => setEditor((current) => ({ ...current, sessions: [...current.sessions, newSession(current.sessions.length + 1)] }))} className="cursor-pointer rounded-xl border-sky-200 hover:bg-sky-50">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditor((current) => ({ ...current, sessions: [...current.sessions, newSession(current.sessions.length + 1)] }))}
+                  className="rounded-md"
+                >
                   <Plus className="h-4 w-4" />
-                  Add Session
+                  Add session
                 </Button>
               </div>
 
-              {editor.sessions.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-sm text-muted-foreground">No draft sessions yet. Generate a draft or add one manually.</div> : (
+              {editor.sessions.length === 0 ? (
+                <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted-foreground">
+                  No draft sessions yet. Generate a draft or add one manually.
+                </div>
+              ) : (
                 <div className="space-y-4">
                   {editor.sessions.map((session, index) => (
-                    <div key={session.tempId} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                    <div key={session.tempId} className="rounded-md border border-border/70 bg-muted/20 p-4">
                       <div className="mb-4 flex items-center justify-between">
-                        <p className="text-sm font-semibold text-slate-950">Session {index + 1}</p>
-                        <button type="button" onClick={() => setEditor((current) => ({ ...current, sessions: current.sessions.filter((item) => item.tempId !== session.tempId) }))} className="inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs text-rose-600 transition hover:bg-rose-50">
+                        <p className="text-sm font-semibold text-foreground">Session {index + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => setEditor((current) => ({ ...current, sessions: current.sessions.filter((item) => item.tempId !== session.tempId) }))}
+                          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                        >
                           <Trash2 className="h-3.5 w-3.5" />
                           Remove
                         </button>
                       </div>
+
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Title</label>
-                          <Input value={session.title} onChange={(e) => setSessionField(session.tempId, 'title', e.target.value)} className="h-10 rounded-xl bg-white" />
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Title</label>
+                          <Input value={session.title} onChange={(e) => setSessionField(session.tempId, 'title', e.target.value)} className="h-10 rounded-md bg-card" />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Date</label>
-                          <Input type="date" value={session.sessionDate} onChange={(e) => setSessionField(session.tempId, 'sessionDate', e.target.value)} className="h-10 rounded-xl bg-white" />
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Date</label>
+                          <Input type="date" value={session.sessionDate} onChange={(e) => setSessionField(session.tempId, 'sessionDate', e.target.value)} className="h-10 rounded-md bg-card" />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Start Time</label>
-                          <Input type="time" value={session.startTime} onChange={(e) => setSessionField(session.tempId, 'startTime', e.target.value)} className="h-10 rounded-xl bg-white" />
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Start time</label>
+                          <Input type="time" value={session.startTime} onChange={(e) => setSessionField(session.tempId, 'startTime', e.target.value)} className="h-10 rounded-md bg-card" />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Duration (Minutes)</label>
-                          <Input type="number" min={15} step={15} value={session.duration} onChange={(e) => setSessionField(session.tempId, 'duration', Number(e.target.value) || 60)} className="h-10 rounded-xl bg-white" />
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Duration</label>
+                          <Input type="number" min={15} step={15} value={session.duration} onChange={(e) => setSessionField(session.tempId, 'duration', Number(e.target.value) || 60)} className="h-10 rounded-md bg-card" />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</label>
-                          <select value={session.sessionType} onChange={(e) => setSessionField(session.tempId, 'sessionType', e.target.value)} className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-sky-200">
-                            <option value="reading">Reading</option><option value="revision">Revision</option><option value="assignment_work">Assignment Work</option><option value="exam_prep">Exam Prep</option><option value="project_work">Project Work</option>
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Type</label>
+                          <select value={session.sessionType} onChange={(e) => setSessionField(session.tempId, 'sessionType', e.target.value)} className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="reading">Reading</option>
+                            <option value="revision">Revision</option>
+                            <option value="assignment_work">Assignment work</option>
+                            <option value="exam_prep">Exam prep</option>
+                            <option value="project_work">Project work</option>
                           </select>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Notes</label>
-                          <Textarea rows={3} value={session.notes ?? ''} onChange={(e) => setSessionField(session.tempId, 'notes', e.target.value)} className="bg-white" />
+                          <label className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Notes</label>
+                          <Textarea rows={3} value={session.notes ?? ''} onChange={(e) => setSessionField(session.tempId, 'notes', e.target.value)} className="rounded-md bg-card" />
                         </div>
                       </div>
                     </div>
@@ -506,13 +558,15 @@ export default function PlannerPage() {
           <DialogFooter>
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock3 className="h-4 w-4 text-sky-600" />
-                Study reminders will be created 1 hour before every saved session.
+                <Clock3 className="h-4 w-4 text-primary" />
+                Reminder jobs are created one hour before every saved session.
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="cursor-pointer rounded-xl">Cancel</Button>
-                <Button type="button" onClick={savePlan} disabled={saving} className="cursor-pointer rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-[0_20px_45px_-22px_rgba(37,99,235,0.95)] transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_24px_50px_-20px_rgba(14,165,233,0.85)]">
-                  {saving ? 'Saving Plan...' : editingPlanId ? 'Save Changes' : 'Accept and Save'}
+                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="rounded-md">
+                  Cancel
+                </Button>
+                <Button type="button" onClick={savePlan} disabled={saving} className="rounded-md">
+                  {saving ? 'Saving plan...' : editingPlanId ? 'Save changes' : 'Accept and save'}
                 </Button>
               </div>
             </div>

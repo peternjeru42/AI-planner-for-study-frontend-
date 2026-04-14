@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { BookOpen, Edit2, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { BookOpen, Edit2, Plus, Search, Trash2 } from 'lucide-react';
 
 import { subjectsApi } from '@/lib/api';
 import { Subject } from '@/lib/types';
@@ -27,7 +27,27 @@ export default function SubjectsPage() {
   };
 
   useEffect(() => {
-    loadSubjects();
+    let ignore = false;
+
+    const bootstrap = async () => {
+      try {
+        const nextSubjects = await subjectsApi.list();
+        if (!ignore) {
+          setError('');
+          setSubjects(nextSubjects);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Failed to load subjects');
+        }
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleAddSubject = async (subject: Subject) => {
@@ -60,39 +80,78 @@ export default function SubjectsPage() {
     }
   };
 
-  const filteredSubjects = subjects.filter(
-    (subject) =>
-      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subject.code.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredSubjects = useMemo(
+    () =>
+      subjects.filter(
+        (subject) =>
+          subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.code.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
+    [subjects, searchTerm],
   );
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Subjects</h1>
-          <p className="text-muted-foreground mt-1">Manage your course subjects</p>
+    <div className="space-y-8">
+      <section className="page-band">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Subjects</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Keep every course visible, color-coded, and easy to update.</h1>
+            <p className="text-sm leading-7 text-muted-foreground">
+              This view keeps the subject catalog readable so assessments, plans, and progress still have a clean foundation.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setEditingSubject(null);
+              setShowForm(true);
+            }}
+            className="rounded-md"
+          >
+            <Plus className="h-4 w-4" />
+            New subject
+          </Button>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Subject
-        </Button>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Total subjects</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{subjects.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Search matches</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{filteredSubjects.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Active editing</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{editingSubject ? '1' : '0'}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="space-y-3">
-        <Input
-          placeholder="Search subjects by name or code..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
-        />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative w-full max-w-xl">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by subject name or code"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-11 rounded-md pl-10"
+          />
+        </div>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
 
       {showForm ? (
-        <Card className="border-2 border-primary/50 bg-primary/5">
+        <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Add New Subject</CardTitle>
+            <CardTitle>Create subject</CardTitle>
           </CardHeader>
           <CardContent>
             <SubjectForm onSubmit={handleAddSubject} onCancel={() => setShowForm(false)} />
@@ -101,9 +160,9 @@ export default function SubjectsPage() {
       ) : null}
 
       {editingSubject ? (
-        <Card className="border-2 border-primary/50 bg-primary/5">
+        <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Edit Subject</CardTitle>
+            <CardTitle>Edit subject</CardTitle>
           </CardHeader>
           <CardContent>
             <SubjectForm
@@ -115,50 +174,73 @@ export default function SubjectsPage() {
         </Card>
       ) : null}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredSubjects.length === 0 ? (
-          <Card className="col-span-full">
-            <CardContent className="py-12">
+          <Card className="col-span-full border-border/70 bg-card shadow-sm">
+            <CardContent className="py-14">
               <div className="text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-lg">
-                  <BookOpen className="w-6 h-6 text-muted-foreground" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+                  <BookOpen className="h-6 w-6" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">No subjects found</h3>
-                  <p className="text-sm text-muted-foreground">Add your first subject to get started</p>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-foreground">No subjects matched this view.</h3>
+                  <p className="text-sm text-muted-foreground">Add a subject or widen the search terms.</p>
                 </div>
-                <Button onClick={() => setShowForm(true)} variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Subject
+                <Button onClick={() => setShowForm(true)} variant="outline" className="rounded-md">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add subject
                 </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
           filteredSubjects.map((subject) => (
-            <Card key={subject.id} className="hover:border-primary/50 transition">
+            <Card key={subject.id} className="border-border/70 bg-card shadow-sm transition hover:border-primary/30">
               <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="w-4 h-4 rounded-full shrink-0 mt-1" style={{ backgroundColor: subject.color }} />
+                <div className="space-y-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: subject.color }} />
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-semibold text-foreground">{subject.name}</h3>
+                        <p className="text-sm text-muted-foreground">{subject.code}</p>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
-                      <button onClick={() => setEditingSubject(subject)} className="p-2 hover:bg-secondary rounded-lg transition">
-                        <Edit2 className="w-4 h-4 text-muted-foreground" />
+                      <button
+                        onClick={() => {
+                          setShowForm(false);
+                          setEditingSubject(subject);
+                        }}
+                        className="rounded-md border border-border/70 p-2 transition hover:bg-secondary"
+                      >
+                        <Edit2 className="h-4 w-4 text-muted-foreground" />
                       </button>
                       <button
                         onClick={() => handleDeleteSubject(subject.id)}
-                        className="p-2 hover:bg-destructive/10 rounded-lg transition"
+                        className="rounded-md border border-destructive/20 p-2 transition hover:bg-destructive/10"
                       >
-                        <Trash2 className="w-4 h-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground">{subject.name}</h3>
-                    <p className="text-sm text-muted-foreground">{subject.code}</p>
-                    {subject.instructor ? <p className="text-xs text-muted-foreground">Instructor: {subject.instructor}</p> : null}
-                    {subject.semester ? <p className="text-xs text-muted-foreground">{subject.semester}</p> : null}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md border border-border/70 bg-muted/30 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Instructor</p>
+                      <p className="mt-2 text-sm text-foreground">{subject.instructor || 'Not added yet'}</p>
+                    </div>
+                    <div className="rounded-md border border-border/70 bg-muted/30 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Semester</p>
+                      <p className="mt-2 text-sm text-foreground">{subject.semester || 'Not added yet'}</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-md border border-border/70 bg-card p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Notes</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {subject.description || 'No extra notes have been added for this subject yet.'}
+                    </p>
                   </div>
                 </div>
               </CardContent>

@@ -59,7 +59,7 @@ export default function SettingsPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [updateAuthState]);
 
   const handleSavePreferences = async () => {
     if (!preferences || !user) return;
@@ -71,7 +71,7 @@ export default function SettingsPage() {
       });
       updateAuthState(payload.user, payload.profile);
       setPreferences(payload.profile);
-      setSavedMessage('Preferences saved successfully!');
+      setSavedMessage('Preferences saved successfully.');
       window.setTimeout(() => setSavedMessage(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences');
@@ -84,162 +84,182 @@ export default function SettingsPage() {
   };
 
   if (loading || !user || !preferences) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Loading settings...</div>;
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and preferences</p>
-      </div>
+    <div className="space-y-8">
+      <section className="page-band">
+        <div className="max-w-3xl space-y-3">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Preferences</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Tune the study window, session pacing, and reminders.</h1>
+          <p className="text-sm leading-7 text-muted-foreground">
+            These settings shape how the planner behaves without touching the backend workflows behind it.
+          </p>
+        </div>
+      </section>
 
       {savedMessage ? (
-        <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-600">{savedMessage}</AlertDescription>
+        <Alert className="border-primary/20 bg-primary/10">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-primary">{savedMessage}</AlertDescription>
         </Alert>
       ) : null}
+
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your account information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Name</label>
-              <Input value={user.name} disabled />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Email</label>
-              <Input value={user.email} disabled />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Role</label>
-              <Input value={user.role} disabled />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Member Since</label>
-              <Input value={user.enrollmentDate.toLocaleDateString()} disabled />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <div className="space-y-6">
+          <Card className="border-border/70 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Profile</CardTitle>
+              <CardDescription>Readonly account information from your current session.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Name</label>
+                <Input value={user.name} disabled className="h-11 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email</label>
+                <Input value={user.email} disabled className="h-11 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Role</label>
+                <Input value={user.role} disabled className="h-11 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Member since</label>
+                <Input value={user.enrollmentDate.toLocaleDateString()} disabled className="h-11 rounded-md" />
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Study Preferences</CardTitle>
-          <CardDescription>Customize your study schedule settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Preferred Study Start Time</label>
-              <Input type="time" value={preferences.startTime} onChange={(e) => setPreferences({ ...preferences, startTime: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Preferred Study End Time</label>
-              <Input type="time" value={preferences.endTime} onChange={(e) => setPreferences({ ...preferences, endTime: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Study Session Length (minutes)</label>
-              <Input
-                type="number"
-                min="15"
-                max="180"
-                step="15"
-                value={preferences.sessionLength}
-                onChange={(e) => setPreferences({ ...preferences, sessionLength: Number(e.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Break Length (minutes)</label>
-              <Input
-                type="number"
-                min="5"
-                max="60"
-                step="5"
-                value={preferences.breakLength}
-                onChange={(e) => setPreferences({ ...preferences, breakLength: Number(e.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Max Sessions Per Day</label>
-              <Input
-                type="number"
-                min="1"
-                max="20"
-                value={preferences.maxSessionsPerDay}
-                onChange={(e) => setPreferences({ ...preferences, maxSessionsPerDay: Number(e.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Card className="border-border/70 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Session management</CardTitle>
+              <CardDescription>Sign out from the active account on this browser.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="destructive" onClick={handleLogout} className="rounded-md">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="border-border/70 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Study preferences</CardTitle>
+              <CardDescription>Define the study window and the pacing the planner should respect.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Start time</label>
+                  <Input type="time" value={preferences.startTime} onChange={(e) => setPreferences({ ...preferences, startTime: e.target.value })} className="h-11 rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">End time</label>
+                  <Input type="time" value={preferences.endTime} onChange={(e) => setPreferences({ ...preferences, endTime: e.target.value })} className="h-11 rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Session length (minutes)</label>
+                  <Input
+                    type="number"
+                    min="15"
+                    max="180"
+                    step="15"
+                    value={preferences.sessionLength}
+                    onChange={(e) => setPreferences({ ...preferences, sessionLength: Number(e.target.value) })}
+                    className="h-11 rounded-md"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Break length (minutes)</label>
+                  <Input
+                    type="number"
+                    min="5"
+                    max="60"
+                    step="5"
+                    value={preferences.breakLength}
+                    onChange={(e) => setPreferences({ ...preferences, breakLength: Number(e.target.value) })}
+                    className="h-11 rounded-md"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Max sessions per day</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={preferences.maxSessionsPerDay}
+                    onChange={(e) => setPreferences({ ...preferences, maxSessionsPerDay: Number(e.target.value) })}
+                    className="h-11 rounded-md"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Timezone</label>
+                  <Input
+                    value={preferences.timezone || 'Africa/Nairobi'}
+                    onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
+                    className="h-11 rounded-md"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-start gap-3 rounded-md border border-border/70 bg-muted/40 p-3">
                 <input
                   type="checkbox"
                   checked={preferences.weekendAvailable}
                   onChange={(e) => setPreferences({ ...preferences, weekendAvailable: e.target.checked })}
-                  className="w-4 h-4 border border-input rounded cursor-pointer"
+                  className="mt-1 h-4 w-4 rounded border border-input"
                 />
-                Study on Weekends
+                <span className="text-sm leading-6 text-muted-foreground">
+                  Allow study blocks on weekends when the planner needs extra room.
+                </span>
               </label>
-            </div>
-          </div>
 
-          <Button onClick={handleSavePreferences}>Save Preferences</Button>
-        </CardContent>
-      </Card>
+              <Button onClick={handleSavePreferences} className="rounded-md">
+                Save preferences
+              </Button>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Notification Settings</CardTitle>
-          <CardDescription>Choose how you want to be notified</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="in-app"
-                checked={preferences.enableInAppNotifications ?? true}
-                onChange={(e) => setPreferences({ ...preferences, enableInAppNotifications: e.target.checked })}
-                className="w-4 h-4 border border-input rounded cursor-pointer"
-              />
-              <label htmlFor="in-app" className="text-sm text-foreground cursor-pointer">In-app notifications</label>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="email"
-                checked={preferences.enableEmailNotificationsSimulated ?? true}
-                onChange={(e) => setPreferences({ ...preferences, enableEmailNotificationsSimulated: e.target.checked })}
-                className="w-4 h-4 border border-input rounded cursor-pointer"
-              />
-              <label htmlFor="email" className="text-sm text-foreground cursor-pointer">Email notifications (simulated)</label>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-destructive/50 bg-destructive/5">
-        <CardHeader>
-          <CardTitle>Session Management</CardTitle>
-          <CardDescription>Sign out of your current session</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="destructive" onClick={handleLogout} className="gap-2">
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
-        </CardContent>
-      </Card>
+          <Card className="border-border/70 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Notifications</CardTitle>
+              <CardDescription>Choose which reminder channels stay active.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <label className="flex items-start gap-3 rounded-md border border-border/70 bg-muted/40 p-3">
+                <input
+                  type="checkbox"
+                  checked={preferences.enableInAppNotifications ?? true}
+                  onChange={(e) => setPreferences({ ...preferences, enableInAppNotifications: e.target.checked })}
+                  className="mt-1 h-4 w-4 rounded border border-input"
+                />
+                <span className="text-sm leading-6 text-muted-foreground">Enable in-app reminders for sessions, deadlines, and summaries.</span>
+              </label>
+              <label className="flex items-start gap-3 rounded-md border border-border/70 bg-muted/40 p-3">
+                <input
+                  type="checkbox"
+                  checked={preferences.enableEmailNotificationsSimulated ?? true}
+                  onChange={(e) => setPreferences({ ...preferences, enableEmailNotificationsSimulated: e.target.checked })}
+                  className="mt-1 h-4 w-4 rounded border border-input"
+                />
+                <span className="text-sm leading-6 text-muted-foreground">Enable simulated email reminders alongside the in-app feed.</span>
+              </label>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

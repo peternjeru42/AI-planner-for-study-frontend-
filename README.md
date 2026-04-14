@@ -1,4 +1,4 @@
-# AI Study Planner Frontend
+# AI-planner-for-study-frontend-
 
 Next.js frontend for StudyFlow.
 

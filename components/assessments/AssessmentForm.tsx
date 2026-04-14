@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Assessment, AssessmentStatus, AssessmentType, Subject } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { ASSESSMENT_TYPES, PRIORITY_LEVELS } from '@/lib/utils/constants';
 
@@ -66,26 +67,27 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">Title *</label>
         <Input
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="e.g., Midterm Exam"
+          placeholder="e.g. Midterm exam"
+          className="h-11 rounded-md"
         />
         {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">Subject *</label>
           <select
             value={formData.subjectId}
             onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })}
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
           >
-            {subjects.map(subject => (
+            {subjects.map((subject) => (
               <option key={subject.id} value={subject.id}>
                 {subject.name}
               </option>
@@ -98,9 +100,9 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
           <select
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value as AssessmentType })}
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
           >
-            {ASSESSMENT_TYPES.map(type => (
+            {ASSESSMENT_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
               </option>
@@ -114,6 +116,7 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
             type="date"
             value={formData.dueDate}
             onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+            className="h-11 rounded-md"
           />
           {errors.dueDate && <p className="text-xs text-destructive">{errors.dueDate}</p>}
         </div>
@@ -124,6 +127,7 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
             type="time"
             value={formData.dueTime}
             onChange={(e) => setFormData({ ...formData, dueTime: e.target.value })}
+            className="h-11 rounded-md"
           />
         </div>
 
@@ -135,6 +139,7 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
             max="100"
             value={formData.weight}
             onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
+            className="h-11 rounded-md"
           />
           {errors.weight && <p className="text-xs text-destructive">{errors.weight}</p>}
         </div>
@@ -147,6 +152,7 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
             step="0.5"
             value={formData.estimatedHours}
             onChange={(e) => setFormData({ ...formData, estimatedHours: Number(e.target.value) })}
+            className="h-11 rounded-md"
           />
           {errors.estimatedHours && <p className="text-xs text-destructive">{errors.estimatedHours}</p>}
         </div>
@@ -156,9 +162,9 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
           <select
             value={formData.priority}
             onChange={(e) => setFormData({ ...formData, priority: e.target.value as Assessment['priority'] })}
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
           >
-            {PRIORITY_LEVELS.map(level => (
+            {PRIORITY_LEVELS.map((level) => (
               <option key={level.value} value={level.value}>
                 {level.label}
               </option>
@@ -171,7 +177,7 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
           <select
             value={formData.status}
             onChange={(e) => setFormData({ ...formData, status: e.target.value as AssessmentStatus })}
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="pending">Pending</option>
             <option value="in-progress">In Progress</option>
@@ -183,21 +189,21 @@ export default function AssessmentForm({ initialData, subjects, onSubmit, onCanc
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">Notes</label>
-        <textarea
+        <Textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          placeholder="Add notes..."
+          placeholder="Add planning notes, revision scope, or submission details."
           rows={3}
-          className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+          className="rounded-md"
         />
       </div>
 
-      <div className="flex gap-2 justify-end pt-4 border-t border-border">
-        <Button variant="outline" onClick={onCancel} type="button">
+      <div className="flex justify-end gap-2 border-t border-border pt-4">
+        <Button variant="outline" onClick={onCancel} type="button" className="rounded-md">
           Cancel
         </Button>
-        <Button type="submit">
-          {initialData ? 'Update' : 'Add'} Assessment
+        <Button type="submit" className="rounded-md">
+          {initialData ? 'Save assessment' : 'Create assessment'}
         </Button>
       </div>
     </form>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle2, Edit2, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, CheckCircle2, Edit2, Plus, Search, Trash2 } from 'lucide-react';
 
 import { assessmentsApi, subjectsApi } from '@/lib/api';
 import { Assessment, Subject } from '@/lib/types';
@@ -34,7 +34,28 @@ export default function AssessmentsPage() {
   };
 
   useEffect(() => {
-    loadData();
+    let ignore = false;
+
+    const bootstrap = async () => {
+      try {
+        const [nextAssessments, nextSubjects] = await Promise.all([assessmentsApi.list(), subjectsApi.list()]);
+        if (!ignore) {
+          setError('');
+          setAssessments(nextAssessments);
+          setSubjects(nextSubjects);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Failed to load assessments');
+        }
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleAddAssessment = async (assessment: Partial<Assessment>) => {
@@ -69,63 +90,109 @@ export default function AssessmentsPage() {
 
   const getSubjectName = (subjectId: string) => subjects.find((subject) => subject.id === subjectId)?.name || 'Unknown';
 
-  const filteredAssessments = assessments.filter((assessment) => {
-    const matchesSearch = assessment.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !filterStatus || assessment.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredAssessments = useMemo(
+    () =>
+      assessments.filter((assessment) => {
+        const matchesSearch = assessment.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = !filterStatus || assessment.status === filterStatus;
+        return matchesSearch && matchesStatus;
+      }),
+    [assessments, filterStatus, searchTerm],
+  );
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-primary" />;
       case 'overdue':
-        return <AlertCircle className="w-4 h-4 text-destructive" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Assessments</h1>
-          <p className="text-muted-foreground mt-1">Manage all your assignments and exams</p>
+    <div className="space-y-8">
+      <section className="page-band">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Assessments</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Track every deadline in one readable queue.</h1>
+            <p className="text-sm leading-7 text-muted-foreground">
+              Sort by status, search by title, and keep submissions visible enough to plan around before they become urgent.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setEditingAssessment(null);
+              setShowForm(true);
+            }}
+            className="rounded-md"
+          >
+            <Plus className="h-4 w-4" />
+            New assessment
+          </Button>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Assessment
-        </Button>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Total items</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{assessments.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Pending</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{assessments.filter((item) => item.status === 'pending').length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">In progress</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{assessments.filter((item) => item.status === 'in-progress').length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/70 bg-card shadow-sm">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-muted-foreground">Completed</p>
+            <p className="mt-3 text-3xl font-semibold text-foreground">{assessments.filter((item) => item.status === 'completed').length}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search assessments..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
-        />
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
-        >
-          <option value="">All Statuses</option>
-          {ASSESSMENT_STATUSES.map((status) => (
-            <option key={status.value} value={status.value}>
-              {status.label}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex w-full flex-col gap-3 md:flex-row">
+          <div className="relative w-full max-w-xl">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search assessments"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-11 rounded-md pl-10"
+            />
+          </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="h-11 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">All statuses</option>
+            {ASSESSMENT_STATUSES.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
-
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {showForm ? (
-        <Card className="border-2 border-primary/50 bg-primary/5">
+        <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Add New Assessment</CardTitle>
+            <CardTitle>Create assessment</CardTitle>
           </CardHeader>
           <CardContent>
             <AssessmentForm subjects={subjects} onSubmit={handleAddAssessment} onCancel={() => setShowForm(false)} />
@@ -134,9 +201,9 @@ export default function AssessmentsPage() {
       ) : null}
 
       {editingAssessment ? (
-        <Card className="border-2 border-primary/50 bg-primary/5">
+        <Card className="border-border/70 bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Edit Assessment</CardTitle>
+            <CardTitle>Edit assessment</CardTitle>
           </CardHeader>
           <CardContent>
             <AssessmentForm
@@ -149,57 +216,72 @@ export default function AssessmentsPage() {
         </Card>
       ) : null}
 
-      <Card>
+      <Card className="border-border/70 bg-card shadow-sm">
         <CardContent className="pt-6">
           {filteredAssessments.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No assessments found</p>
+            <div className="rounded-md border border-dashed border-border py-14 text-center text-sm text-muted-foreground">
+              No assessments matched this view.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[760px]">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Title</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Subject</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Type</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Due Date</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
-                    <th className="text-right py-3 px-4 font-semibold text-foreground">Actions</th>
+                  <tr className="border-b border-border text-left">
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Assessment</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Subject</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Type</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Due</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAssessments.map((assessment) => {
                     const daysLeft = DateUtils.daysUntil(new Date(assessment.dueDate));
                     return (
-                      <tr key={assessment.id} className="border-b border-border hover:bg-secondary/30 transition">
-                        <td className="py-3 px-4 text-foreground">{assessment.title}</td>
-                        <td className="py-3 px-4 text-foreground text-sm">{getSubjectName(assessment.subjectId)}</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline">{ASSESSMENT_TYPES.find((type) => type.value === assessment.type)?.label}</Badge>
+                      <tr key={assessment.id} className="border-b border-border/70 transition hover:bg-muted/30">
+                        <td className="px-4 py-4">
+                          <div className="space-y-1">
+                            <p className="font-medium text-foreground">{assessment.title}</p>
+                            <p className="text-xs text-muted-foreground">{assessment.priority || 'No priority set'}</p>
+                          </div>
                         </td>
-                        <td className="py-3 px-4 text-foreground text-sm">
+                        <td className="px-4 py-4 text-sm text-foreground">{getSubjectName(assessment.subjectId)}</td>
+                        <td className="px-4 py-4">
+                          <Badge variant="outline" className="rounded-md">
+                            {ASSESSMENT_TYPES.find((type) => type.value === assessment.type)?.label}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-foreground">
                           {DateUtils.formatDate(new Date(assessment.dueDate))}
-                          <p className="text-xs text-muted-foreground">{daysLeft === 0 ? 'Today' : `${daysLeft} days`}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {daysLeft === 0 ? 'Due today' : daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
+                          </p>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
                             {getStatusIcon(assessment.status)}
-                            <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'}>
+                            <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'} className="rounded-md">
                               {ASSESSMENT_STATUSES.find((status) => status.value === assessment.status)?.label ?? assessment.status}
                             </Badge>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="px-4 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => setEditingAssessment(assessment)} className="p-2 hover:bg-secondary rounded-lg transition">
-                              <Edit2 className="w-4 h-4 text-muted-foreground" />
+                            <button
+                              onClick={() => {
+                                setShowForm(false);
+                                setEditingAssessment(assessment);
+                              }}
+                              className="rounded-md border border-border/70 p-2 transition hover:bg-secondary"
+                            >
+                              <Edit2 className="h-4 w-4 text-muted-foreground" />
                             </button>
                             <button
                               onClick={() => handleDeleteAssessment(assessment.id)}
-                              className="p-2 hover:bg-destructive/10 rounded-lg transition"
+                              className="rounded-md border border-destructive/20 p-2 transition hover:bg-destructive/10"
                             >
-                              <Trash2 className="w-4 h-4 text-destructive" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </button>
                           </div>
                         </td>

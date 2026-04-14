@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarClock, Target } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { User } from '@/lib/types';
 
 interface WelcomeCardProps {
@@ -20,33 +19,45 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ user }) => {
   };
 
   return (
-    <Card className="border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
-      <CardContent className="pt-8">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">
-                {getGreeting()}, {user.name?.split(' ')[0]}!
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Ready to ace your exams? Let&apos;s create a study plan.
-              </p>
-            </div>
+    <section className="page-band">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div className="space-y-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Today&apos;s runway</p>
+          <div className="space-y-3">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+              {getGreeting()}, {user.name?.split(' ')[0]}. Keep this week calm before it gets crowded.
+            </h2>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              Review the next deadlines, protect your study windows early, and adjust the plan before pressure builds.
+            </p>
+          </div>
 
-            <Button
-              asChild
-              size="sm"
-              className="w-full cursor-pointer gap-2 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-[0_20px_45px_-22px_rgba(37,99,235,0.95)] transition hover:-translate-y-0.5 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_24px_50px_-20px_rgba(14,165,233,0.85)] sm:w-auto"
-            >
-              <Link href="/planner">
-                <BookOpen className="h-4 w-4" />
-                Generate Study Plan
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+          <Button asChild size="lg" className="w-full gap-2 rounded-md sm:w-auto">
+            <Link href="/planner">
+              <BookOpen className="h-4 w-4" />
+              Open Plan Studio
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="rounded-md border border-border/70 bg-card/90 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <CalendarClock className="h-4 w-4 text-primary" />
+              Session timing
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">Lock the next focused block before new tasks claim the evening.</p>
+          </div>
+          <div className="rounded-md border border-border/70 bg-card/90 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Target className="h-4 w-4 text-accent" />
+              Deadline control
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">Move important work forward while there is still slack in the week.</p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

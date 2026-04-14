@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, LineChart, TrendingUp } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { dashboardApi } from '@/lib/api';
@@ -65,58 +65,65 @@ export default function DashboardPage() {
   const completionRate = dashboard?.statsCards.averageCompletionRate ?? 0;
 
   return (
-    <div className="space-y-8 px-4 sm:px-6 lg:px-8 py-6">
+    <div className="space-y-8">
       <WelcomeCard user={user} />
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+      ) : null}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="panel-grid">
         <StatCard
-          title="Pending Tasks"
+          title="Pending assessments"
           value={pendingAssessments}
-          description="Assessments to complete"
-          icon={<AlertCircle className="w-8 h-8 text-amber-500" />}
+          description="Items still waiting for completion"
+          icon={<AlertCircle className="h-6 w-6" />}
+          accent="accent"
         />
         <StatCard
-          title="Completed"
+          title="Completed work"
           value={completedAssessments}
-          description="Assessments finished"
-          icon={<CheckCircle2 className="w-8 h-8 text-green-500" />}
+          description="Assessments already finished"
+          icon={<CheckCircle2 className="h-6 w-6" />}
+          accent="primary"
         />
         <StatCard
-          title="Study Hours"
+          title="Study hours"
           value={totalStudyHours.toFixed(1)}
-          description="Hours logged this week"
-          icon={<Clock className="w-8 h-8 text-blue-500" />}
+          description="Hours recorded in the current week"
+          icon={<Clock className="h-6 w-6" />}
+          accent="neutral"
         />
         <StatCard
-          title="Completion Rate"
+          title="Completion rate"
           value={`${Math.round(completionRate)}%`}
-          description="Overall progress"
-          icon={<TrendingUp className="w-8 h-8 text-purple-500" />}
+          description="Average delivery across tracked work"
+          icon={<TrendingUp className="h-6 w-6" />}
+          accent="primary"
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div className="space-y-6">
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>This Week&apos;s Study Time</CardTitle>
-              <CardDescription>Hours studied per day</CardDescription>
+              <CardTitle>This week&apos;s study load</CardTitle>
+              <CardDescription>Hours completed across the last seven days.</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading chart...</p>
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                     <XAxis dataKey="day" stroke="var(--color-muted-foreground)" />
                     <YAxis stroke="var(--color-muted-foreground)" />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'var(--color-card)',
                         border: '1px solid var(--color-border)',
+                        borderRadius: '8px',
                       }}
                     />
                     <Bar dataKey="hours" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
@@ -126,85 +133,117 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle>Assessment Status Distribution</CardTitle>
-              <CardDescription>Overview of all assessments</CardDescription>
+              <CardTitle>Assessment status mix</CardTitle>
+              <CardDescription>A quick split of what still needs attention versus what is already done.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-secondary rounded-lg">
-                  <p className="text-2xl font-bold text-foreground">{pendingAssessments}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Pending</p>
-                </div>
-                <div className="text-center p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {upcomingDeadlines.filter((assessment) => assessment.status === 'in-progress').length}
-                  </p>
-                  <p className="text-xs text-blue-600/70 mt-1">In Progress</p>
-                </div>
-                <div className="text-center p-4 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{completedAssessments}</p>
-                  <p className="text-xs text-green-600/70 mt-1">Completed</p>
-                </div>
+            <CardContent className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-md border border-border/70 bg-muted/40 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pending</p>
+                <p className="mt-3 text-3xl font-semibold text-foreground">{pendingAssessments}</p>
+                <p className="mt-2 text-sm text-muted-foreground">Still in the queue.</p>
+              </div>
+              <div className="rounded-md border border-border/70 bg-secondary/55 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-foreground/75">In progress</p>
+                <p className="mt-3 text-3xl font-semibold text-secondary-foreground">
+                  {upcomingDeadlines.filter((assessment) => assessment.status === 'in-progress').length}
+                </p>
+                <p className="mt-2 text-sm text-secondary-foreground/70">Already underway.</p>
+              </div>
+              <div className="rounded-md border border-border/70 bg-primary/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/70">Completed</p>
+                <p className="mt-3 text-3xl font-semibold text-primary">{completedAssessments}</p>
+                <p className="mt-2 text-sm text-muted-foreground">Ready to archive mentally.</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-6">
-          <Card>
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Today&apos;s Sessions</CardTitle>
-              <CardDescription>{todaySessions.length} scheduled</CardDescription>
+              <CardTitle>Today&apos;s sessions</CardTitle>
+              <CardDescription>{todaySessions.length} session{todaySessions.length === 1 ? '' : 's'} on deck.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               {todaySessions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No sessions scheduled for today</p>
-              ) : (
-                <div className="space-y-2">
-                  {todaySessions.slice(0, 3).map((session) => (
-                    <div key={session.id} className="p-2 bg-secondary rounded-lg text-sm">
-                      <p className="font-medium text-foreground text-xs truncate">{session.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {DateUtils.formatTime(new Date(session.startTime))} - {DateUtils.formatTime(new Date(session.endTime))}
-                      </p>
-                    </div>
-                  ))}
+                <div className="rounded-md border border-dashed border-border p-5 text-sm text-muted-foreground">
+                  No study sessions are scheduled for today.
                 </div>
+              ) : (
+                todaySessions.slice(0, 4).map((session) => (
+                  <div key={session.id} className="rounded-md border border-border/70 bg-muted/30 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">{session.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {DateUtils.formatTime(new Date(session.startTime))} - {DateUtils.formatTime(new Date(session.endTime))}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="rounded-md">
+                        {session.duration} min
+                      </Badge>
+                    </div>
+                  </div>
+                ))
               )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/70 bg-card shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Upcoming Deadlines</CardTitle>
-              <CardDescription>{upcomingDeadlines.length} coming up</CardDescription>
+              <CardTitle>Upcoming deadlines</CardTitle>
+              <CardDescription>What needs attention next.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {upcomingDeadlines.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No upcoming deadlines</p>
-                ) : (
-                  upcomingDeadlines.slice(0, 4).map((assessment) => {
-                    const daysLeft = DateUtils.daysUntil(new Date(assessment.dueDate));
-                    return (
-                      <div key={assessment.id} className="p-3 border border-border rounded-lg">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-foreground truncate">{assessment.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {daysLeft === 0 ? 'Today' : `in ${daysLeft} days`}
-                            </p>
-                          </div>
-                          <Badge variant={daysLeft <= 3 ? 'destructive' : 'secondary'} className="shrink-0">
-                            {assessment.priority || 'planned'}
-                          </Badge>
+            <CardContent className="space-y-3">
+              {upcomingDeadlines.length === 0 ? (
+                <div className="rounded-md border border-dashed border-border p-5 text-sm text-muted-foreground">
+                  No upcoming deadlines are visible right now.
+                </div>
+              ) : (
+                upcomingDeadlines.slice(0, 5).map((assessment) => {
+                  const daysLeft = DateUtils.daysUntil(new Date(assessment.dueDate));
+                  return (
+                    <div key={assessment.id} className="rounded-md border border-border/70 bg-card p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">{assessment.title}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {daysLeft === 0 ? 'Due today' : daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `Due in ${daysLeft} days`}
+                          </p>
                         </div>
+                        <Badge variant={daysLeft <= 3 ? 'destructive' : 'secondary'} className="rounded-md">
+                          {assessment.priority || 'planned'}
+                        </Badge>
                       </div>
-                    );
-                  })
-                )}
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Readout</CardTitle>
+              <CardDescription>One glance before you switch tabs.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/30 p-3">
+                <span>Hours already logged</span>
+                <span className="font-semibold text-foreground">{totalStudyHours.toFixed(1)}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/30 p-3">
+                <span>Sessions today</span>
+                <span className="font-semibold text-foreground">{todaySessions.length}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/30 p-3">
+                <span>Completion trend</span>
+                <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                  <LineChart className="h-4 w-4 text-primary" />
+                  {Math.round(completionRate)}%
+                </span>
               </div>
             </CardContent>
           </Card>
