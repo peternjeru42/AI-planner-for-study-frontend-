@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Activity } from 'lucide-react';
 
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -10,15 +9,8 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 
 export const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const { isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -32,10 +24,6 @@ export const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ child
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (

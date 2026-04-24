@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, BookOpen, Calendar, CheckSquare, LayoutDashboard, Settings, Sparkles, TrendingUp } from 'lucide-react';
+import { Bell, BookOpen, Calendar, CheckSquare, LayoutDashboard, Settings, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ export const Sidebar: React.FC<{ isOpen?: boolean; onClose?: () => void }> = ({ 
     { href: '/planner', label: 'Plan Studio', icon: <Calendar className="w-5 h-5" /> },
     { href: '/progress', label: 'Momentum', icon: <TrendingUp className="w-5 h-5" /> },
     { href: '/notifications', label: 'Inbox', icon: <Bell className="w-5 h-5" /> },
+    { href: '/admin', label: 'Operations', icon: <Users className="w-5 h-5" /> },
     { href: '/settings', label: 'Preferences', icon: <Settings className="w-5 h-5" /> },
   ];
 

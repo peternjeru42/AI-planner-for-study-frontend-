@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle2, LogOut } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 import { authApi } from '@/lib/api';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 
 export default function SettingsPage() {
-  const { user, profile, updateAuthState, logout } = useAuth();
+  const { user, profile, updateAuthState } = useAuth();
   const [preferences, setPreferences] = useState<StudyPreferences | null>(profile);
   const [savedMessage, setSavedMessage] = useState('');
   const [error, setError] = useState('');
@@ -78,11 +78,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = '/';
-  };
-
   if (loading || !user || !preferences) {
     return <div className="p-6 text-sm text-muted-foreground">Loading settings...</div>;
   }
@@ -136,19 +131,6 @@ export default function SettingsPage() {
                 <label className="text-sm font-medium text-foreground">Member since</label>
                 <Input value={user.enrollmentDate.toLocaleDateString()} disabled className="h-11 rounded-md" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70 bg-card shadow-sm">
-            <CardHeader>
-              <CardTitle>Session management</CardTitle>
-              <CardDescription>Sign out from the active account on this browser.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="destructive" onClick={handleLogout} className="rounded-md">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </Button>
             </CardContent>
           </Card>
         </div>

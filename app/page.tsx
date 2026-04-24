@@ -77,11 +77,11 @@ export default function LandingPage() {
             <Link href="#features" className="text-sm text-muted-foreground transition hover:text-foreground">
               What it does
             </Link>
-            <Button onClick={() => router.push('/login')} variant="outline" size="sm" className="rounded-md border-border/70 bg-card shadow-none">
-              Sign in
+            <Button onClick={() => router.push('/dashboard')} variant="outline" size="sm" className="rounded-md border-border/70 bg-card shadow-none">
+              Open workspace
             </Button>
-            <Button onClick={() => router.push('/signup')} size="sm" className="rounded-md">
-              Create account
+            <Button onClick={() => router.push('/planner')} size="sm" className="rounded-md">
+              Plan study
             </Button>
           </div>
         </div>
@@ -223,11 +223,11 @@ export default function LandingPage() {
                   Sign in and move through the workflows for subjects, assessments, planning, progress, and notifications.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button size="lg" onClick={() => router.push('/signup')} className="rounded-md">
-                    Create account
+                  <Button size="lg" onClick={() => router.push('/dashboard')} className="rounded-md">
+                    Open workspace
                   </Button>
-                  <Button size="lg" variant="outline" onClick={() => router.push('/login')} className="rounded-md">
-                    Sign in
+                  <Button size="lg" variant="outline" onClick={() => router.push('/planner')} className="rounded-md">
+                    Plan study
                   </Button>
                 </div>
               </div>
@@ -240,11 +240,11 @@ export default function LandingPage() {
         <div className="app-grid flex flex-col items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:px-6 lg:flex-row lg:px-8">
           <p>&copy; 2026 PulsePlan. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            <Link href="/login" className="transition hover:text-foreground">
-              Sign in
+            <Link href="/dashboard" className="transition hover:text-foreground">
+              Workspace
             </Link>
-            <Link href="/signup" className="transition hover:text-foreground">
-              Create account
+            <Link href="/planner" className="transition hover:text-foreground">
+              Planner
             </Link>
           </div>
         </div>

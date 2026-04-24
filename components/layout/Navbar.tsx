@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, BookOpen, LogOut, Menu, Settings, Sparkles } from 'lucide-react';
+import { Bell, BookOpen, Menu, Settings, Sparkles } from 'lucide-react';
 
 import { notificationsApi } from '@/lib/api';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -22,7 +22,7 @@ export const Navbar: React.FC<{ showMenu?: boolean; onMenuToggle?: () => void }>
   onMenuToggle,
 }) => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -52,11 +52,6 @@ export const Navbar: React.FC<{ showMenu?: boolean; onMenuToggle?: () => void }>
       ignore = true;
     };
   }, [user]);
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
 
   return (
     <nav className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
@@ -122,10 +117,6 @@ export const Navbar: React.FC<{ showMenu?: boolean; onMenuToggle?: () => void }>
               <DropdownMenuItem className="cursor-pointer rounded-md" onClick={() => router.push('/settings')}>
                 <Settings className="h-4 w-4" />
                 Preferences
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer rounded-md" variant="destructive" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-                Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

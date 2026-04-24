@@ -19,9 +19,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const guestUser: User = {
+  id: 'guest',
+  name: 'Guest Student',
+  email: 'guest@example.com',
+  role: 'student',
+  enrollmentDate: new Date(),
+  isActive: true,
+  isVerified: true,
+};
+
+const guestProfile: StudyPreferences = {
+  userId: 'guest',
+  courseName: 'General Studies',
+  yearOfStudy: 1,
+  institutionName: '',
+  timezone: 'Africa/Nairobi',
+  startTime: '08:00',
+  endTime: '22:00',
+  sessionLength: 60,
+  breakLength: 15,
+  maxSessionsPerDay: 6,
+  weekendAvailable: true,
+  enableInAppNotifications: true,
+  enableEmailNotificationsSimulated: true,
+  darkMode: false,
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<StudyPreferences | null>(null);
+  const [user, setUser] = useState<User | null>(guestUser);
+  const [profile, setProfile] = useState<StudyPreferences | null>(guestProfile);
   const [isLoading, setIsLoading] = useState(true);
 
   const updateAuthState = (nextUser: User, nextProfile: StudyPreferences | null) => {
@@ -31,20 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      const access = tokenStorage.getAccessToken();
-      if (!access) {
-        setUser(null);
-        setProfile(null);
-        return;
-      }
-
       const payload = await authApi.me();
       setUser(payload.user);
-      setProfile(payload.profile);
+      setProfile(payload.profile ?? guestProfile);
     } catch {
-      tokenStorage.clear();
-      setUser(null);
-      setProfile(null);
+      setUser(guestUser);
+      setProfile(guestProfile);
     }
   };
 
@@ -83,9 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      await authApi.logout();
-      setUser(null);
-      setProfile(null);
+      tokenStorage.clear();
+      setUser(guestUser);
+      setProfile(guestProfile);
     } finally {
       setIsLoading(false);
     }

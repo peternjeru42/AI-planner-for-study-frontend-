@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Activity, BellRing, Calendar, CheckSquare, Users } from 'lucide-react';
 
 import { dashboardApi } from '@/lib/api';
@@ -34,21 +33,14 @@ type AdminDashboardData = {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
   const [data, setData] = useState<AdminDashboardData | null>(null);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
 
   useEffect(() => {
     let ignore = false;
 
     const loadDashboard = async () => {
-      if (!user || user.role !== 'admin') return;
+      if (!user) return;
       try {
         const payload = await dashboardApi.admin();
         if (!ignore) {
@@ -68,7 +60,7 @@ export default function AdminDashboard() {
     };
   }, [user]);
 
-  if (!user || user.role !== 'admin') {
+  if (!user) {
     return null;
   }
 
